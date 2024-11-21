@@ -138,7 +138,9 @@ stand_sf <- treetops_sf_with_dbh %>%
   sf::st_bbox() %>% 
   sf::st_as_sfc() %>%
   sf::st_centroid() %>% 
-  sf::st_buffer(dist = 50, endCapStyle = "SQUARE")
+  sf::st_buffer(dist = sqrt(20000)/2, endCapStyle = "SQUARE")
+# area
+sf::st_area(stand_sf)
 ```
 
 check this stand on the map
@@ -526,7 +528,7 @@ plt_fnl_temp =
       "mischief"
       , na.value = "transparent"
       , name = "distance to\nnearest tree (m)"
-      , limits = c(0,12)
+      , limits = c(0,23)
     ) +
     # openings
     geom_sf(data = dist_rast_temp$openings_vect, mapping = aes(color = openining_area_m2), fill = NA) +
@@ -534,7 +536,7 @@ plt_fnl_temp =
       low = "gray77", high = "gray11"
       , labels = scales::comma_format(accuracy = 1)
       , name = latex2exp::TeX("opening\narea ($\\m^2$)")
-      , limits = c(0,2100)
+      , limits = c(0,7500)
     ) +
     # clumps
     ggnewscale::new_scale_fill() +
@@ -576,7 +578,7 @@ plt_open_temp =
         low = "gray77", high = "gray11"
         , labels = scales::comma_format(accuracy = 1)
         , name = latex2exp::TeX("opening\narea ($\\m^2$)")
-        , limits = c(0,2100)
+        , limits = c(0,7500)
       ) +
       # tree points
       geom_sf(data = ttops_temp, color = "gray88", shape = ".") +
@@ -829,14 +831,14 @@ knitr::include_graphics("https://i.imghippo.com/files/YkdWW1725394855.jpg")
 ########################################################################################
 ########################################################################################
 # desired BA
-  target_ba = 80 # cannot be > current BA
+  target_ba = 85 # cannot be > current BA
 # desired QMD
-  target_qmd = 15
+  target_qmd = 18
 # desired proportion (%) of trees in each clump size
   # !cannot be create larger proportion of ">25 trees" clump as this would require adding trees...
   # c("Individual", "2-4 trees", 	"5-9 trees", 	"10-15 trees","16-25 trees",">25 trees")
   # c(.18, .33, .24, .10, .15)
-  target_pcts = c(25, 35, 10, 10, 10, 0)
+  target_pcts = c(30, 25, 20, 10, 15, 0)
 ########################################################################################
 ########################################################################################
 # desired BA, QMD, and proportion of trees in each clump size
@@ -2037,13 +2039,11 @@ prescription_trees %>%
   kableExtra::kbl() %>% 
   kableExtra::kable_styling() %>% 
   kableExtra::add_header_above(
-    c(" "=1,"Old"=5)
+    c(" "=1,"Old"=6)
   )
 ```
 
-plot the prescription
-
-plot the distance raster and openings vector data we just got with overlaid tree clumps and tree points
+get the distance raster and openings vector data 
 
 ```{r}
 ttops_temp2 = prescription_trees %>% 
@@ -2052,7 +2052,14 @@ ttops_temp2 = prescription_trees %>%
   st_clump_points(clump_dist_m = tree_clump_dist_m)
 clump_polys_temp2 = get_clump_summary(ttops_temp2)
 dist_rast_temp2 = get_clump_dist_rast(clump_polys_temp2)
+# what are the openings
+dist_rast_temp2$openings_vect$openining_area_m2 %>% summary()
+dist_rast_temp2$dist_rast %>% terra::aggregate(2, cores = 4) %>% terra::summary()
+```
 
+plot the prescription
+
+```{r}
 plt_fnl_temp2 = 
   ggplot() + 
     # distance
@@ -2064,7 +2071,7 @@ plt_fnl_temp2 =
       "mischief"
       , na.value = "transparent"
       , name = "distance to\nnearest tree (m)"
-      , limits = c(0,12)
+      , limits = c(0,23)
     ) +
     # openings
     geom_sf(data = dist_rast_temp2$openings_vect, mapping = aes(color = openining_area_m2), fill = NA) +
@@ -2072,7 +2079,7 @@ plt_fnl_temp2 =
       low = "gray77", high = "gray11"
       , labels = scales::comma_format(accuracy = 1)
       , name = latex2exp::TeX("opening\narea ($\\m^2$)")
-      , limits = c(0,2100)
+      , limits = c(0,7500)
     ) +
     # clumps
     ggnewscale::new_scale_fill() +
@@ -2111,7 +2118,7 @@ plt_open_temp2 =
         low = "gray77", high = "gray11"
         , labels = scales::comma_format(accuracy = 1)
         , name = latex2exp::TeX("opening\narea ($\\m^2$)")
-        , limits = c(0,2100)
+        , limits = c(0,7500)
       ) +
       # tree points
       geom_sf(data = ttops_temp2, color = "gray88", shape = ".") +
